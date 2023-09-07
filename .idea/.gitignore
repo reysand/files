@@ -1,0 +1,9 @@
+# Ignore the Shelf files
+/shelf
+
+/caches
+/libraries
+modules.xml
+workspace.xml
+navEditor.xml
+assetWizardSettings.xml

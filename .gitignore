@@ -1,0 +1,21 @@
+# Generated files
+build/
+
+# Gradle cache
+.gradle/
+
+# IntelliJ
+*.iml
+
+# OS files
+.DS_Store
+
+# Android Studio captures folder
+/captures
+
+# Native builds
+.externalNativeBuild
+.cxx
+
+# Local configuration file (sdk path, etc)
+local.properties
