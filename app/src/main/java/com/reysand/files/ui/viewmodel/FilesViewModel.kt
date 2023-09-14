@@ -46,6 +46,9 @@ class FilesViewModel(private val fileRepository: FileRepository) : ViewModel() {
     val homeDirectory = Environment.getExternalStorageDirectory().path
     val currentDirectory = mutableStateOf(homeDirectory)
 
+    // State indicating whether to show the permission dialog
+    val showPermissionDialog = mutableStateOf(!Environment.isExternalStorageManager())
+
     // Initialize the ViewModel by loading files from the home directory
     init {
         getFiles(homeDirectory)

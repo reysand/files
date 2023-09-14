@@ -15,4 +15,12 @@
   -->
 <resources>
     <string name="app_name">Files</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_dismiss_button">Cancel</string>
+
+    <!-- File Access Permissions -->
+    <string name="file_access_permission_title">File Access Permission</string>
+    <string name="file_access_permission_message">This app requires access to manage all files on your device for proper functionality. Please grant the permission.</string>
+    <string name="file_access_permission_confirm_button">Grant Permission</string>
 </resources>

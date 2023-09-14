@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.reysand.files.data.model.FileModel
 import com.reysand.files.ui.components.FileListItem
+import com.reysand.files.ui.components.PermissionAlertDialog
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
 /**
@@ -38,6 +39,8 @@ fun HomeScreen(
 ) {
     // Collect the list of files as state
     val files by filesViewModel.files.collectAsState(initial = emptyList())
+
+    PermissionAlertDialog(showPermissionDialog = filesViewModel.showPermissionDialog)
 
     LazyColumn(modifier = modifier) {
         items(files) { file ->
