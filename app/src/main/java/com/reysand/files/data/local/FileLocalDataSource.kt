@@ -28,10 +28,24 @@ class FileLocalDataSource : FileRepository {
         // List files in the specified path
         val files = File(path).listFiles()
 
-        // Map files to FileModel objects and sort them by name
-        return files?.map { file ->
-            createFileModel(file)
-        }?.sortedBy { it.name.lowercase() } ?: emptyList()
+        // Separate directories and other files
+        val directories = mutableListOf<FileModel>()
+        val others = mutableListOf<FileModel>()
+
+        files?.forEach { file ->
+            val fileModel = createFileModel(file)
+            when (fileModel.fileType) {
+                FileModel.FileType.DIRECTORY -> directories.add(fileModel)
+                else -> others.add(fileModel)
+            }
+        }
+
+        // Sort directories and other files separately
+        directories.sortBy { it.name.lowercase() }
+        others.sortBy { it.name.lowercase() }
+
+        // Combine and return the sorted list
+        return directories + others
     }
 
     /**
