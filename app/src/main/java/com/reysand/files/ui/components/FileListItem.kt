@@ -57,7 +57,7 @@ fun FileListItem(file: FileModel, modifier: Modifier = Modifier, onClick: () -> 
     }
 
     ListItem(
-        headlineText = {
+        headlineContent = {
             Text(
                 text = file.name,
                 modifier = modifier,
@@ -66,7 +66,7 @@ fun FileListItem(file: FileModel, modifier: Modifier = Modifier, onClick: () -> 
             )
         },
         modifier = modifier.clickable(onClick = onClick),
-        supportingText = {
+        supportingContent = {
             Text(
                 text = info,
                 modifier = modifier
