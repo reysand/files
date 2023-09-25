@@ -13,22 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.reysand.files
+package com.reysand.files.ui.navigation
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import com.reysand.files.ui.FilesApp
-import com.reysand.files.ui.theme.FilesTheme
-
-class MainActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            FilesTheme {
-                FilesApp()
-            }
-        }
-    }
+/**
+ * Object containing constant destination keys used for navigation.
+ */
+object Destinations {
+    const val HOME = "home"
+    const val FILE_LIST = "fileList"
+    const val SETTINGS = "settings"
 }

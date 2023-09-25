@@ -15,23 +15,30 @@
  */
 package com.reysand.files.ui
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.reysand.files.R
-import com.reysand.files.ui.screens.HomeScreen
+import com.reysand.files.ui.navigation.Destinations
+import com.reysand.files.ui.navigation.NavGraph
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
 /**
@@ -42,26 +49,40 @@ import com.reysand.files.ui.viewmodel.FilesViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilesApp(
-    modifier: Modifier = Modifier,
-    filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel.Factory)
-) {
+fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel.Factory)) {
+    val navController = rememberNavController()
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val topBarTitle = when (currentRoute) {
+        Destinations.SETTINGS -> R.string.settings_title
+        else -> R.string.app_name
+    }
+
     Scaffold(
-        modifier = modifier,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = stringResource(id = R.string.app_name),
-                        modifier = modifier
+                        text = stringResource(id = topBarTitle)
                     )
                 },
-                modifier = modifier,
                 navigationIcon = {
                     // Display back arrow if not in the home directory
                     if (filesViewModel.currentDirectory.value != filesViewModel.homeDirectory) {
                         IconButton(onClick = { filesViewModel.navigateUp() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    if (currentRoute != Destinations.SETTINGS) {
+                        IconButton(onClick = { navController.navigate(Destinations.SETTINGS) }) {
+                            Icon(imageVector = Icons.Rounded.Settings, contentDescription = null)
                         }
                     }
                 },
@@ -71,9 +92,16 @@ fun FilesApp(
             )
         }
     ) {
-        HomeScreen(
-            filesViewModel = filesViewModel,
-            modifier = modifier.padding(it)
-        )
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            NavGraph(
+                filesViewModel = filesViewModel,
+                navController = navController
+            )
+        }
     }
 }

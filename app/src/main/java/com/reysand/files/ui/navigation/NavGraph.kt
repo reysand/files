@@ -13,26 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.reysand.files.ui.screens
+package com.reysand.files.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.reysand.files.ui.navigation.Destinations
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.reysand.files.ui.screens.FileListScreen
+import com.reysand.files.ui.screens.HomeScreen
+import com.reysand.files.ui.screens.SettingsScreen
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
 /**
- * Composable function for the Home screen.
+ * Composable function for setting up the navigation graph.
  *
  * @param filesViewModel The [FilesViewModel] providing data for the screen.
  * @param navController NavHostController for managing navigation within the app.
  * @param modifier Modifier for customizing the layout.
  */
 @Composable
-fun HomeScreen(
+fun NavGraph(
     filesViewModel: FilesViewModel,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    navController.navigate(Destinations.FILE_LIST)
+    NavHost(navController = navController, startDestination = Destinations.HOME) {
+        composable(Destinations.HOME) {
+            HomeScreen(filesViewModel = filesViewModel, navController = navController, modifier = modifier)
+        }
+        composable(Destinations.FILE_LIST) {
+            FileListScreen(filesViewModel = filesViewModel)
+        }
+        composable(Destinations.SETTINGS) {
+            SettingsScreen()
+        }
+    }
 }
