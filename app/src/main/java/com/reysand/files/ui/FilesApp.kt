@@ -15,6 +15,7 @@
  */
 package com.reysand.files.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -37,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.reysand.files.R
+import com.reysand.files.ui.components.PathTabs
 import com.reysand.files.ui.navigation.Destinations
 import com.reysand.files.ui.navigation.NavGraph
 import com.reysand.files.ui.viewmodel.FilesViewModel
@@ -44,17 +46,19 @@ import com.reysand.files.ui.viewmodel.FilesViewModel
 /**
  * Composable function representing the main UI of the files application.
  *
- * @param modifier Modifier for customizing the layout.
- * @param filesViewModel ViewModel for managing file-related data and operations.
+ * The [FilesViewModel] providing data for the screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel.Factory)) {
+    // Create a navigation controller
     val navController = rememberNavController()
 
+    // Get the current route from the navigation stack
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // Determine the title for the top app bar based on the current route
     val topBarTitle = when (currentRoute) {
         Destinations.SETTINGS -> R.string.settings_title
         else -> R.string.app_name
@@ -98,10 +102,17 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                 .padding(it),
             color = MaterialTheme.colorScheme.background
         ) {
-            NavGraph(
-                filesViewModel = filesViewModel,
-                navController = navController
-            )
+            Column {
+                if (currentRoute == Destinations.FILE_LIST) {
+                    PathTabs(filesViewModel = filesViewModel) { newPath ->
+                        filesViewModel.getFiles(newPath)
+                    }
+                }
+                NavGraph(
+                    filesViewModel = filesViewModel,
+                    navController = navController
+                )
+            }
         }
     }
 }
