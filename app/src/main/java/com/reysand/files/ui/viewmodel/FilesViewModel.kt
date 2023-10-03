@@ -77,6 +77,65 @@ class FilesViewModel(private val fileRepository: FileRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Move a file from one path to another.
+     *
+     * @param file The file to move.
+     * @param destination The destination path.
+     */
+    fun moveFile(file: FileModel, destination: String) {
+        viewModelScope.launch {
+            if (fileRepository.moveFile(file.path, homeDirectory.plus(destination))) {
+                getFiles(currentDirectory.value)
+            }
+        }
+    }
+
+    /**
+     * Copy a file from one path to another.
+     *
+     * @param file The file to copy.
+     * @param destination The destination path.
+     */
+    fun copyFile(file: FileModel, destination: String) {
+        viewModelScope.launch {
+            if (fileRepository.copyFile(file.path, homeDirectory.plus(destination))) {
+                getFiles(currentDirectory.value)
+            }
+        }
+    }
+
+    /**
+     * Rename a file.
+     *
+     * @param file The file to rename.
+     * @param newName The new name of the file.
+     */
+    fun renameFile(file: FileModel, newName: String) {
+        viewModelScope.launch {
+            if (fileRepository.renameFile(
+                    file.path,
+                    file.path.removeSuffix(file.name).plus(newName)
+                )
+            ) {
+                getFiles(currentDirectory.value)
+            }
+        }
+    }
+
+    /**
+     * Delete a file.
+     *
+     * @param path The path of the file to delete.
+     */
+    fun deleteFile(path: String) {
+        viewModelScope.launch {
+            if (fileRepository.deleteFile(path)) {
+                getFiles(currentDirectory.value)
+            }
+        }
+    }
+
     companion object {
         // Factory for creating FilesViewModel instances
         val Factory: ViewModelProvider.Factory = viewModelFactory {

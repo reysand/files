@@ -48,6 +48,26 @@ class FileLocalDataSource : FileRepository {
         return directories + others
     }
 
+    override suspend fun moveFile(source: String, destination: String): Boolean {
+        return renameFile(source, destination)
+    }
+
+    override suspend fun copyFile(source: String, destination: String): Boolean {
+        return operateOnFile(source, destination) { sourceFile, destinationFile ->
+            sourceFile.copyRecursively(destinationFile, true)
+        }
+    }
+
+    override suspend fun renameFile(from: String, to: String): Boolean {
+        return operateOnFile(from, to) { sourceFile, destinationFile ->
+            sourceFile.renameTo(destinationFile)
+        }
+    }
+
+    override suspend fun deleteFile(path: String): Boolean {
+        return File(path).deleteRecursively()
+    }
+
     /**
      * Creates a [FileModel] object from a [File] instance.
      *
@@ -65,5 +85,34 @@ class FileLocalDataSource : FileRepository {
             size = file.length(),
             lastModified = file.lastModified()
         )
+    }
+
+    /**
+     * Performs an operation on a file.
+     *
+     * @param source The path of the source file.
+     * @param destination The path of the destination file.
+     * @param operation The operation to perform on the file.
+     * @return A boolean value indicating the success of the operation.
+     */
+    private fun operateOnFile(
+        source: String,
+        destination: String,
+        operation: (File, File) -> Boolean
+    ): Boolean {
+        return try {
+            val sourceFile = File(source)
+            val destinationFile = File(destination)
+
+            if (operation(sourceFile, destinationFile)) {
+                createFileModel(destinationFile)
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }

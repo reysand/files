@@ -45,7 +45,7 @@ fun FileListScreen(
 
     LazyColumn(modifier = modifier) {
         items(files) { file ->
-            FileListItem(file = file) {
+            FileListItem(file = file, filesViewModel) {
                 if (file.fileType == FileModel.FileType.DIRECTORY) {
                     filesViewModel.getFiles(file.path)
                 }
