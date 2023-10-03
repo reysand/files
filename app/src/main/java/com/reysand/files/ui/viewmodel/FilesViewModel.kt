@@ -78,6 +78,15 @@ class FilesViewModel(private val fileRepository: FileRepository) : ViewModel() {
     }
 
     /**
+     * Gets the free space of the storage.
+     *
+     * @return A string representing the free space of the storage.
+     */
+    fun getStorageFreeSpace(): String {
+        return fileRepository.getStorageFreeSpace()
+    }
+
+    /**
      * Move a file from one path to another.
      *
      * @param file The file to move.

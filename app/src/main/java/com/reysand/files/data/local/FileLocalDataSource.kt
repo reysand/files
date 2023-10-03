@@ -15,14 +15,21 @@
  */
 package com.reysand.files.data.local
 
+import android.os.Environment
 import com.reysand.files.data.model.FileModel
 import com.reysand.files.data.repository.FileRepository
+import com.reysand.files.data.util.FileSizeFormatter
 import java.io.File
 
 /**
  * Implementation of [FileRepository] for accessing local files.
  */
 class FileLocalDataSource : FileRepository {
+
+    override fun getStorageFreeSpace(): String {
+        val availableBytes = Environment.getExternalStorageDirectory().freeSpace
+        return "${FileSizeFormatter.getFormattedSize(availableBytes)} free"
+    }
 
     override suspend fun getFiles(path: String): List<FileModel> {
         // List files in the specified path

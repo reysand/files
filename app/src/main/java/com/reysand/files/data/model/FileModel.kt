@@ -15,10 +15,9 @@
  */
 package com.reysand.files.data.model
 
+import com.reysand.files.data.util.FileSizeFormatter
 import java.util.Calendar
 import java.util.Locale
-import kotlin.math.log10
-import kotlin.math.pow
 
 /**
  * Data class representing a file.
@@ -50,13 +49,7 @@ data class FileModel(
      * @return A string representing the formatted size (e.g., "2.5 MB").
      */
     fun getFormattedSize(): String {
-        val units = arrayOf("B", "KB", "MB", "GB", "TB")
-        val base = 1024.0
-
-        val unitIndex = (log10(size.toDouble()) / log10(base)).toInt().coerceIn(0, units.size - 1)
-        val convertedSize = size / base.pow(unitIndex.toDouble())
-
-        return String.format("%.2f %s", convertedSize, units[unitIndex])
+        return FileSizeFormatter.getFormattedSize(size)
     }
 
     /**

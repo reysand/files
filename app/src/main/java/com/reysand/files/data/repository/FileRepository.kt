@@ -23,6 +23,13 @@ import com.reysand.files.data.model.FileModel
 interface FileRepository {
 
     /**
+     * Retrieves the free space of the storage.
+     *
+     * @return A formatted string containing the free space of the storage.
+     */
+    fun getStorageFreeSpace(): String
+
+    /**
      * Retrieves a list of [FileModel] objects from the specified path.
      *
      * @param path The path to the directory containing the files.

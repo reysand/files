@@ -33,6 +33,9 @@
     <string name="options_rename">Rename</string>
     <string name="options_delete">Delete</string>
 
+    <!-- Storage -->
+    <string name="internal_storage">Internal Storage</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_privacy_title">Privacy</string>

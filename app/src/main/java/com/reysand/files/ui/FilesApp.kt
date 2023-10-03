@@ -60,6 +60,7 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
 
     // Determine the title for the top app bar based on the current route
     val topBarTitle = when (currentRoute) {
+        Destinations.FILE_LIST -> R.string.internal_storage
         Destinations.SETTINGS -> R.string.settings_title
         else -> R.string.app_name
     }
@@ -73,9 +74,14 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                     )
                 },
                 navigationIcon = {
-                    // Display back arrow if not in the home directory
-                    if (filesViewModel.currentDirectory.value != filesViewModel.homeDirectory) {
-                        IconButton(onClick = { filesViewModel.navigateUp() }) {
+                    if (currentRoute != Destinations.HOME) {
+                        IconButton(onClick = {
+                            if (filesViewModel.currentDirectory.value != filesViewModel.homeDirectory && currentRoute == Destinations.FILE_LIST) {
+                                filesViewModel.navigateUp()
+                            } else {
+                                navController.popBackStack()
+                            }
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = null
@@ -84,9 +90,12 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                     }
                 },
                 actions = {
-                    if (currentRoute != Destinations.SETTINGS) {
+                    if (currentRoute == Destinations.HOME) {
                         IconButton(onClick = { navController.navigate(Destinations.SETTINGS) }) {
-                            Icon(imageVector = Icons.Rounded.Settings, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = null
+                            )
                         }
                     }
                 },

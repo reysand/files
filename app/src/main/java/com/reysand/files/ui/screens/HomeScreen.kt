@@ -15,9 +15,15 @@
  */
 package com.reysand.files.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import com.reysand.files.R
+import com.reysand.files.ui.components.StorageCard
 import com.reysand.files.ui.navigation.Destinations
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
@@ -34,5 +40,16 @@ fun HomeScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    navController.navigate(Destinations.FILE_LIST)
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center
+    ) {
+        StorageCard(
+            title = stringResource(id = R.string.internal_storage),
+            leadingIcon = R.drawable.ic_internal_storage,
+            info = filesViewModel.getStorageFreeSpace(),
+        ) {
+            navController.navigate(Destinations.FILE_LIST)
+        }
+    }
 }
