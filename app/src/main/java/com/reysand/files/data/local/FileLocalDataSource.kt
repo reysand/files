@@ -28,7 +28,7 @@ class FileLocalDataSource : FileRepository {
 
     override fun getStorageFreeSpace(): String {
         val availableBytes = Environment.getExternalStorageDirectory().freeSpace
-        return "${FileSizeFormatter.getFormattedSize(availableBytes)} free"
+        return FileSizeFormatter.getFormattedSize(availableBytes)
     }
 
     override suspend fun getFiles(path: String): List<FileModel> {

@@ -35,6 +35,7 @@
 
     <!-- Storage -->
     <string name="internal_storage">Internal Storage</string>
+    <string name="storage_free_space">%1$s free</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

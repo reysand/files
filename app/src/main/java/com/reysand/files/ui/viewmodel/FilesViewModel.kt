@@ -24,8 +24,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.reysand.files.FilesApplication
+import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
 import com.reysand.files.data.repository.FileRepository
+import com.reysand.files.ui.util.ContextWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -35,8 +37,12 @@ import java.io.File
  * ViewModel for managing file-related data and operations.
  *
  * @param fileRepository The repository for accessing file data.
+ * @param contextWrapper The wrapper for accessing the application context.
  */
-class FilesViewModel(private val fileRepository: FileRepository) : ViewModel() {
+class FilesViewModel(
+    private val fileRepository: FileRepository,
+    private val contextWrapper: ContextWrapper
+) : ViewModel() {
 
     // MutableStateFlow holding the list of files
     private var _files = MutableStateFlow<List<FileModel>>(emptyList())
@@ -83,7 +89,10 @@ class FilesViewModel(private val fileRepository: FileRepository) : ViewModel() {
      * @return A string representing the free space of the storage.
      */
     fun getStorageFreeSpace(): String {
-        return fileRepository.getStorageFreeSpace()
+        return contextWrapper.getContext().getString(
+            R.string.storage_free_space,
+            fileRepository.getStorageFreeSpace()
+        )
     }
 
     /**
@@ -151,7 +160,8 @@ class FilesViewModel(private val fileRepository: FileRepository) : ViewModel() {
             initializer {
                 val application = (this[APPLICATION_KEY] as FilesApplication)
                 val fileRepository = application.container.fileRepository
-                FilesViewModel(fileRepository = fileRepository)
+                val contextWrapper = ContextWrapper(application.applicationContext)
+                FilesViewModel(fileRepository = fileRepository, contextWrapper = contextWrapper)
             }
         }
     }
