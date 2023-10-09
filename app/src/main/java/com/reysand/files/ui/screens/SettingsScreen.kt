@@ -82,6 +82,7 @@ fun SettingsSection(
     Text(
         text = title,
         modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+        color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Bold
     )
 
