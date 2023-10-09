@@ -15,30 +15,43 @@
  */
 package com.reysand.files.ui.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
-import com.reysand.files.ui.viewmodel.FilesViewModel
+import com.reysand.files.ui.theme.FilesTheme
 
 /**
  * Composable function for displaying a single file item.
  *
  * @param file The [FileModel] representing the file.
- * @param filesViewModel The [FilesViewModel] providing data for the screen.
+ * @param homeDirectory The path to the home directory.
+ * @param moveOperation Callback for when the move option is clicked.
+ * @param copyOperation Callback for when the copy option is clicked.
+ * @param renameOperation Callback for when the rename option is clicked.
+ * @param deleteOperation Callback for when the delete option is clicked.
  * @param modifier Modifier for customizing the layout.
  * @param onClick Callback for when the item is clicked.
  */
 @Composable
 fun FileListItem(
     file: FileModel,
-    filesViewModel: FilesViewModel,
+    homeDirectory: String,
+    moveOperation: (FileModel, String) -> Unit,
+    copyOperation: (FileModel, String) -> Unit,
+    renameOperation: (FileModel, String) -> Unit,
+    deleteOperation: (String) -> Unit,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -79,46 +92,61 @@ fun FileListItem(
             )
         },
         trailingContent = {
-            OptionsMenu(file = file, filesViewModel = filesViewModel)
+            OptionsMenu(
+                file = file,
+                homeDirectory = homeDirectory,
+                moveOperation = moveOperation,
+                copyOperation = copyOperation,
+                renameOperation = renameOperation,
+                deleteOperation = deleteOperation
+            )
         }
     )
 }
 
-//@Preview(name = "Light Mode")
-//@Preview(
-//    uiMode = Configuration.UI_MODE_NIGHT_YES,
-//    showBackground = true,
-//    name = "Dark Mode"
-//)
-//@Composable
-//fun FileListItemPreview() {
-//    FilesTheme {
-//        // A surface container using the 'background' color from the theme
-//        Surface(
-//            color = MaterialTheme.colorScheme.background
-//        ) {
-//            Column {
-//                FileListItem(
-//                    FileModel(
-//                        name = "Android",
-//                        path = "",
-//                        fileType = FileModel.FileType.DIRECTORY,
-//                        size = 1,
-//                        lastModified = 1_593_689_259_000
-//                    ),
-//                    onClick = {}
-//                )
-//                FileListItem(
-//                    FileModel(
-//                        name = "text.txt",
-//                        path = "",
-//                        fileType = FileModel.FileType.OTHER,
-//                        size = 1024,
-//                        lastModified = 1_693_689_259_000
-//                    ),
-//                    onClick = {}
-//                )
-//            }
-//        }
-//    }
-//}
+@Preview(name = "Light Mode")
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    name = "Dark Mode"
+)
+@Composable
+fun FileListItemPreview() {
+    FilesTheme {
+        // A surface container using the 'background' color from the theme
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column {
+                FileListItem(
+                    file = FileModel(
+                        name = "Android",
+                        path = "/storage/emulated/0",
+                        fileType = FileModel.FileType.DIRECTORY,
+                        size = 1,
+                        lastModified = 1_593_689_259_000
+                    ),
+                    homeDirectory = "",
+                    moveOperation = { _, _ -> },
+                    copyOperation = { _, _ -> },
+                    renameOperation = { _, _ -> },
+                    deleteOperation = {}
+                ) {}
+                FileListItem(
+                    file = FileModel(
+                        name = "text.txt",
+                        path = "/storage/emulated/0",
+                        fileType = FileModel.FileType.OTHER,
+                        size = 1024,
+                        lastModified = 1_693_689_259_000
+                    ),
+                    homeDirectory = "",
+                    moveOperation = { _, _ -> },
+                    copyOperation = { _, _ -> },
+                    renameOperation = { _, _ -> },
+                    deleteOperation = {}
+                ) {}
+            }
+        }
+    }
+}

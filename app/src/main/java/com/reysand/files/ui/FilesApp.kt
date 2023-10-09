@@ -46,7 +46,7 @@ import com.reysand.files.ui.viewmodel.FilesViewModel
 /**
  * Composable function representing the main UI of the files application.
  *
- * The [FilesViewModel] providing data for the screen.
+ * @param filesViewModel The [FilesViewModel] providing data for the screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,46 +65,43 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
         else -> R.string.app_name
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = topBarTitle)
-                    )
-                },
-                navigationIcon = {
-                    if (currentRoute != Destinations.HOME) {
-                        IconButton(onClick = {
-                            if (filesViewModel.currentDirectory.value != filesViewModel.homeDirectory && currentRoute == Destinations.FILE_LIST) {
-                                filesViewModel.navigateUp()
-                            } else {
-                                navController.popBackStack()
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = null
-                            )
+    Scaffold(topBar = {
+        CenterAlignedTopAppBar(
+            title = {
+                Text(
+                    text = stringResource(id = topBarTitle)
+                )
+            },
+            navigationIcon = {
+                if (currentRoute != Destinations.HOME) {
+                    IconButton(onClick = {
+                        if (filesViewModel.currentDirectory.value != filesViewModel.homeDirectory &&
+                            currentRoute == Destinations.FILE_LIST) {
+                            filesViewModel.navigateUp()
+                        } else {
+                            navController.popBackStack()
                         }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack, contentDescription = null
+                        )
                     }
-                },
-                actions = {
-                    if (currentRoute == Destinations.HOME) {
-                        IconButton(onClick = { navController.navigate(Destinations.SETTINGS) }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
-                                contentDescription = null
-                            )
-                        }
+                }
+            },
+            actions = {
+                if (currentRoute == Destinations.HOME) {
+                    IconButton(onClick = { navController.navigate(Destinations.SETTINGS) }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings, contentDescription = null
+                        )
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5F)
-                ),
-            )
-        }
-    ) {
+                }
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5F)
+            ),
+        )
+    }) {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -113,13 +110,14 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
         ) {
             Column {
                 if (currentRoute == Destinations.FILE_LIST) {
-                    PathTabs(filesViewModel = filesViewModel) { newPath ->
+                    PathTabs(
+                        filesViewModel.homeDirectory, filesViewModel.currentDirectory.value
+                    ) { newPath ->
                         filesViewModel.getFiles(newPath)
                     }
                 }
                 NavGraph(
-                    filesViewModel = filesViewModel,
-                    navController = navController
+                    filesViewModel = filesViewModel, navController = navController
                 )
             }
         }

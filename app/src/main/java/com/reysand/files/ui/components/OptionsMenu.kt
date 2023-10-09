@@ -37,12 +37,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
 import com.reysand.files.ui.theme.FilesTheme
-import com.reysand.files.ui.viewmodel.FilesViewModel
 
+/**
+ * Composable function for displaying an options menu.
+ *
+ * @param file The [FileModel] representing the file.
+ * @param homeDirectory The path to the home directory.
+ * @param moveOperation Callback for when the move option is clicked.
+ * @param copyOperation Callback for when the copy option is clicked.
+ * @param renameOperation Callback for when the rename option is clicked.
+ * @param deleteOperation Callback for when the delete option is clicked.
+ */
 @Composable
 fun OptionsMenu(
     file: FileModel,
-    filesViewModel: FilesViewModel
+    homeDirectory: String,
+    moveOperation: (FileModel, String) -> Unit,
+    copyOperation: (FileModel, String) -> Unit,
+    renameOperation: (FileModel, String) -> Unit,
+    deleteOperation: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(0) }
@@ -85,9 +98,9 @@ fun OptionsMenu(
         1 -> {
             RenameDialog(
                 dialogTitle = stringResource(id = R.string.options_move_to),
-                fileName = file.path.removePrefix(filesViewModel.homeDirectory),
+                fileName = file.path.removePrefix(homeDirectory),
                 onConfirm = { newName ->
-                    filesViewModel.moveFile(file, newName)
+                    moveOperation(file, newName)
                     showDialog = 0
                 },
                 onDismiss = { showDialog = 0 }
@@ -97,9 +110,9 @@ fun OptionsMenu(
         2 -> {
             RenameDialog(
                 dialogTitle = stringResource(id = R.string.options_copy_to),
-                fileName = file.path.removePrefix(filesViewModel.homeDirectory),
+                fileName = file.path.removePrefix(homeDirectory),
                 onConfirm = { newName ->
-                    filesViewModel.copyFile(file, newName)
+                    copyOperation(file, newName)
                     showDialog = 0
                 },
                 onDismiss = { showDialog = 0 }
@@ -111,7 +124,7 @@ fun OptionsMenu(
                 dialogTitle = stringResource(id = R.string.options_rename),
                 fileName = file.name,
                 onConfirm = { newName ->
-                    filesViewModel.renameFile(file, newName)
+                    renameOperation(file, newName)
                     showDialog = 0
                 },
                 onDismiss = { showDialog = 0 }
@@ -122,7 +135,7 @@ fun OptionsMenu(
             DeleteDialog(
                 fileName = file.name,
                 onDelete = {
-                    filesViewModel.deleteFile(file.path)
+                    deleteOperation(file.path)
                     showDialog = 0
                 },
                 onDismiss = { showDialog = 0 }

@@ -45,7 +45,14 @@ fun FileListScreen(
 
     LazyColumn(modifier = modifier) {
         items(files) { file ->
-            FileListItem(file = file, filesViewModel) {
+            FileListItem(
+                file = file,
+                homeDirectory = filesViewModel.homeDirectory,
+                moveOperation = { fileModel, path -> filesViewModel.moveFile(fileModel, path) },
+                copyOperation = { fileModel, path -> filesViewModel.copyFile(fileModel, path) },
+                renameOperation = { fileModel, path -> filesViewModel.renameFile(fileModel, path) },
+                deleteOperation = { path -> filesViewModel.deleteFile(path) }
+            ) {
                 if (file.fileType == FileModel.FileType.DIRECTORY) {
                     filesViewModel.getFiles(file.path)
                 }

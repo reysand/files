@@ -15,27 +15,39 @@
  */
 package com.reysand.files.ui.components
 
+import android.content.res.Configuration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.reysand.files.ui.viewmodel.FilesViewModel
+import com.reysand.files.ui.theme.FilesTheme
 import java.io.File
 
 /**
  * Composable function for displaying a row of tabs representing the current directory path.
  *
- * @param filesViewModel The [FilesViewModel] providing data for the screen.
+ * @param homeDirectory The path to the home directory.
+ * @param currentDirectory The path to the current directory.
  * @param onNavigateToDirectory Callback function for navigating to a specific directory.
  */
 @Composable
-fun PathTabs(filesViewModel: FilesViewModel, onNavigateToDirectory: (String) -> Unit) {
-    val path = filesViewModel.currentDirectory.value.removePrefix(filesViewModel.homeDirectory)
-    val pathComponents = listOf(filesViewModel.homeDirectory) +
-            path.split(File.separator).filter { it.isNotEmpty() }
+fun PathTabs(
+    homeDirectory: String,
+    currentDirectory: String,
+    onNavigateToDirectory: (String) -> Unit
+) {
+    // Extract the relative path from the home directory
+    val path = currentDirectory.removePrefix(homeDirectory)
+
+    // Split the path into individual components
+    val pathComponents = listOf(homeDirectory) + path.split(File.separator).filter {
+        it.isNotEmpty()
+    }
 
     ScrollableTabRow(
         selectedTabIndex = pathComponents.size - 1,
@@ -44,6 +56,7 @@ fun PathTabs(filesViewModel: FilesViewModel, onNavigateToDirectory: (String) -> 
     ) {
         pathComponents.forEachIndexed { index, component ->
             Tab(selected = index == pathComponents.size - 1, onClick = {
+                // Join the path components to form the new directory path
                 val newPath = pathComponents.subList(0, index + 1).joinToString(File.separator)
                 onNavigateToDirectory(newPath)
             }, text = {
@@ -54,6 +67,27 @@ fun PathTabs(filesViewModel: FilesViewModel, onNavigateToDirectory: (String) -> 
                     maxLines = 1
                 )
             })
+        }
+    }
+}
+
+@Preview(name = "Light Mode")
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    name = "Dark Mode"
+)
+@Composable
+fun PathTabsPreview() {
+    FilesTheme {
+        // A surface container using the 'background' color from the theme
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            PathTabs(
+                homeDirectory = "/storage/emulated/0",
+                currentDirectory = "/storage/emulated/0${File.separator}Download"
+            ) {}
         }
     }
 }
