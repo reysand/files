@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.reysand.files
+package com.reysand.files.ui.util
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import com.reysand.files.ui.FilesApp
-import com.reysand.files.ui.theme.FilesTheme
+import android.content.Context
 
-class MainActivity : ComponentActivity() {
+/**
+ * Wrapper class for [Context].
+ *
+ * @param context The [Context] to be wrapped.
+ */
+class ContextWrapper(private val context: Context) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            FilesTheme {
-                FilesApp()
-            }
-        }
-    }
+    /**
+     * Returns the wrapped [Context].
+     *
+     * @return The wrapped [Context].
+     */
+    fun getContext(): Context = context
 }

@@ -15,20 +15,16 @@
  */
 package com.reysand.files
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import com.reysand.files.ui.FilesApp
-import com.reysand.files.ui.theme.FilesTheme
+import android.app.Application
+import com.reysand.files.data.AppContainer
+import com.reysand.files.data.DefaultAppContainer
 
-class MainActivity : ComponentActivity() {
+class FilesApplication : Application() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            FilesTheme {
-                FilesApp()
-            }
-        }
+    lateinit var container: AppContainer
+
+    override fun onCreate() {
+        super.onCreate()
+        container = DefaultAppContainer()
     }
 }

@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.reysand.files
+package com.reysand.files.data
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import com.reysand.files.ui.FilesApp
-import com.reysand.files.ui.theme.FilesTheme
+import com.reysand.files.data.local.FileLocalDataSource
+import com.reysand.files.data.repository.FileRepository
 
-class MainActivity : ComponentActivity() {
+interface AppContainer {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            FilesTheme {
-                FilesApp()
-            }
-        }
+    val fileRepository: FileRepository
+}
+
+class DefaultAppContainer : AppContainer {
+
+    override val fileRepository: FileRepository by lazy {
+        FileLocalDataSource()
     }
 }
