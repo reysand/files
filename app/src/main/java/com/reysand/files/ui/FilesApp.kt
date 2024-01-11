@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -41,6 +42,7 @@ import com.reysand.files.R
 import com.reysand.files.ui.components.PathTabs
 import com.reysand.files.ui.navigation.Destinations
 import com.reysand.files.ui.navigation.NavGraph
+import com.reysand.files.ui.util.OneDriveService
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
 /**
@@ -53,6 +55,8 @@ import com.reysand.files.ui.viewmodel.FilesViewModel
 fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel.Factory)) {
     // Create a navigation controller
     val navController = rememberNavController()
+
+    val context = LocalContext.current
 
     // Get the current route from the navigation stack
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -68,15 +72,14 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = {
-                Text(
-                    text = stringResource(id = topBarTitle)
-                )
+                Text(text = stringResource(id = topBarTitle))
             },
             navigationIcon = {
                 if (currentRoute != Destinations.HOME) {
                     IconButton(onClick = {
                         if (filesViewModel.currentDirectory.value != filesViewModel.homeDirectory &&
-                            currentRoute == Destinations.FILE_LIST) {
+                            currentRoute == Destinations.FILE_LIST
+                        ) {
                             filesViewModel.navigateUp()
                         } else {
                             navController.popBackStack()
@@ -99,7 +102,7 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
             },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5F)
-            ),
+            )
         )
     }) {
         Surface(
@@ -117,7 +120,9 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                     }
                 }
                 NavGraph(
-                    filesViewModel = filesViewModel, navController = navController
+                    filesViewModel = filesViewModel,
+                    navController = navController,
+                    oneDriveService = OneDriveService(context)
                 )
             }
         }

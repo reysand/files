@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.reysand.files
+package com.reysand.files.data.model
 
-import android.app.Application
-import com.reysand.files.data.AppContainer
-import com.reysand.files.data.DefaultAppContainer
-
-class FilesApplication : Application() {
-
-    lateinit var container: AppContainer
-
-    override fun onCreate() {
-        super.onCreate()
-        container = DefaultAppContainer(this)
-    }
-}
+/**
+ * Data class representing a credential.
+ *
+ * @property email The email of the user.
+ */
+data class AuthModel(
+    val email: String
+)

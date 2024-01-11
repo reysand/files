@@ -13,10 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+
+val secretsPropertiesFile = rootProject.file("secrets.properties")
+val secretsProperties = Properties()
+secretsProperties.load(FileInputStream(secretsPropertiesFile))
 
 android {
     namespace = "com.reysand.files"
@@ -35,8 +46,22 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+        }
+    }
+
     buildTypes {
+        debug {
+            manifestPlaceholders["signatureHash"] = secretsProperties["DEBUG_SIGNATURE_HASH"] as String
+        }
         release {
+            manifestPlaceholders["signatureHash"] = secretsProperties["RELEASE_SIGNATURE_HASH"] as String
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -77,6 +102,13 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.navigation.compose)
+    implementation(libs.datastore.preferences)
+
+    implementation(libs.msal) {
+        exclude(group = "io.opentelemetry")
+    }
+    implementation(libs.opentelemetry.api)
+    implementation(libs.opentelemetry.context)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

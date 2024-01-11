@@ -28,6 +28,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -38,17 +41,56 @@ import androidx.compose.ui.unit.dp
 import com.reysand.files.R
 import com.reysand.files.ui.components.allowPermission
 import com.reysand.files.ui.theme.FilesTheme
+import com.reysand.files.ui.util.OneDriveService
+import com.reysand.files.ui.viewmodel.FilesViewModel
+import kotlinx.coroutines.launch
 
 /**
  * Composable function for displaying the settings screen.
+ *
+ * @param filesViewModel The [FilesViewModel] providing data for the screen.
+ * @param oneDriveService The [OneDriveService] for accessing OneDrive.
+
  */
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(filesViewModel: FilesViewModel, oneDriveService: OneDriveService) {
+
     val context = LocalContext.current
+    val oneDriveAccount by remember { filesViewModel.oneDriveAccount }
 
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        SettingsSection(title = stringResource(id = R.string.settings_account_title)) {
+            val scope = rememberCoroutineScope()
+
+            ListItem(
+                headlineContent = {
+                    Text(text = stringResource(id = R.string.onedrive_storage))
+                },
+                modifier = Modifier.clickable(onClick = {
+                    scope.launch {
+                        if (oneDriveService.isSignedIn()) {
+                            oneDriveService.signOut()
+                            filesViewModel.oneDriveAccount.value = null
+                            filesViewModel.removeAuthInfo()
+                        } else {
+                            oneDriveService.signIn { account ->
+                                filesViewModel.oneDriveAccount.value = account
+                                filesViewModel.setAuthInfo(account!!)
+                            }
+                        }
+                    }
+                }),
+                trailingContent = {
+                    Text(
+                        text = oneDriveAccount
+                            ?: stringResource(id = R.string.settings_account_sign_in),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            )
+        }
         SettingsSection(title = stringResource(id = R.string.settings_privacy_title)) {
             ListItem(
                 headlineContent = {

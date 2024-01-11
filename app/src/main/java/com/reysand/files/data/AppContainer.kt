@@ -15,17 +15,26 @@
  */
 package com.reysand.files.data
 
+import android.content.Context
 import com.reysand.files.data.local.FileLocalDataSource
+import com.reysand.files.data.remote.AuthDataStore
+import com.reysand.files.data.repository.AuthRepository
 import com.reysand.files.data.repository.FileRepository
 
 interface AppContainer {
 
     val fileRepository: FileRepository
+
+    val authRepository: AuthRepository
 }
 
-class DefaultAppContainer : AppContainer {
+class DefaultAppContainer(context: Context) : AppContainer {
 
     override val fileRepository: FileRepository by lazy {
         FileLocalDataSource()
+    }
+
+    override val authRepository: AuthRepository by lazy {
+        AuthDataStore(context)
     }
 }

@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.reysand.files.FilesApplication
 import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
+import com.reysand.files.data.repository.AuthRepository
 import com.reysand.files.data.repository.FileRepository
 import com.reysand.files.ui.util.ContextWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +42,8 @@ import java.io.File
  */
 class FilesViewModel(
     private val fileRepository: FileRepository,
-    private val contextWrapper: ContextWrapper
+    private val contextWrapper: ContextWrapper,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     // MutableStateFlow holding the list of files
@@ -55,9 +57,37 @@ class FilesViewModel(
     // State indicating whether to show the permission dialog
     val showPermissionDialog = mutableStateOf(!Environment.isExternalStorageManager())
 
+    val oneDriveAccount = mutableStateOf<String?>(null)
+
     // Initialize the ViewModel by loading files from the home directory
     init {
         getFiles(homeDirectory)
+
+        viewModelScope.launch {
+            authRepository.getAuth().collect {
+                oneDriveAccount.value = it?.email
+            }
+        }
+    }
+
+    /**
+     * Set the email of the authenticated user.
+     *
+     * @param email The email of the authenticated user.
+     */
+    fun setAuthInfo(email: String) {
+        viewModelScope.launch {
+            authRepository.saveAuth(email)
+        }
+    }
+
+    /**
+     * Remove the user credentials.
+     */
+    fun removeAuthInfo() {
+        viewModelScope.launch {
+            authRepository.removeAuth()
+        }
     }
 
     /**
@@ -161,7 +191,12 @@ class FilesViewModel(
                 val application = (this[APPLICATION_KEY] as FilesApplication)
                 val fileRepository = application.container.fileRepository
                 val contextWrapper = ContextWrapper(application.applicationContext)
-                FilesViewModel(fileRepository = fileRepository, contextWrapper = contextWrapper)
+                val authRepository = application.container.authRepository
+                FilesViewModel(
+                    fileRepository = fileRepository,
+                    contextWrapper = contextWrapper,
+                    authRepository = authRepository
+                )
             }
         }
     }
