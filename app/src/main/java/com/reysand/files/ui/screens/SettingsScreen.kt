@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.reysand.files.R
 import com.reysand.files.ui.components.allowPermission
 import com.reysand.files.ui.theme.FilesTheme
-import com.reysand.files.ui.util.OneDriveService
+import com.reysand.files.ui.util.MicrosoftService
 import com.reysand.files.ui.viewmodel.FilesViewModel
 import kotlinx.coroutines.launch
 
@@ -49,11 +49,11 @@ import kotlinx.coroutines.launch
  * Composable function for displaying the settings screen.
  *
  * @param filesViewModel The [FilesViewModel] providing data for the screen.
- * @param oneDriveService The [OneDriveService] for accessing OneDrive.
+ * @param microsoftService The [MicrosoftService] for accessing OneDrive.
 
  */
 @Composable
-fun SettingsScreen(filesViewModel: FilesViewModel, oneDriveService: OneDriveService) {
+fun SettingsScreen(filesViewModel: FilesViewModel, microsoftService: MicrosoftService) {
 
     val context = LocalContext.current
     val oneDriveAccount by remember { filesViewModel.oneDriveAccount }
@@ -70,14 +70,14 @@ fun SettingsScreen(filesViewModel: FilesViewModel, oneDriveService: OneDriveServ
                 },
                 modifier = Modifier.clickable(onClick = {
                     scope.launch {
-                        if (oneDriveService.isSignedIn()) {
-                            oneDriveService.signOut()
+                        if (microsoftService.isSignedIn()) {
+                            microsoftService.signOut()
                             filesViewModel.oneDriveAccount.value = null
                             filesViewModel.removeAuthInfo()
                         } else {
-                            oneDriveService.signIn { account ->
+                            microsoftService.signIn { account, token ->
                                 filesViewModel.oneDriveAccount.value = account
-                                filesViewModel.setAuthInfo(account!!)
+                                filesViewModel.setAuthInfo(account!!, token!!)
                             }
                         }
                     }

@@ -58,6 +58,7 @@ class FilesViewModel(
     val showPermissionDialog = mutableStateOf(!Environment.isExternalStorageManager())
 
     val oneDriveAccount = mutableStateOf<String?>(null)
+    val oneDriveToken = mutableStateOf<String?>(null)
 
     // Initialize the ViewModel by loading files from the home directory
     init {
@@ -66,6 +67,7 @@ class FilesViewModel(
         viewModelScope.launch {
             authRepository.getAuth().collect {
                 oneDriveAccount.value = it?.email
+                oneDriveToken.value = it?.token
             }
         }
     }
@@ -75,9 +77,9 @@ class FilesViewModel(
      *
      * @param email The email of the authenticated user.
      */
-    fun setAuthInfo(email: String) {
+    fun setAuthInfo(email: String, token: String) {
         viewModelScope.launch {
-            authRepository.saveAuth(email)
+            authRepository.saveAuth(email, token)
         }
     }
 

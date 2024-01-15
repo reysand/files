@@ -28,7 +28,7 @@ interface AuthRepository {
      *
      * @param email The email of the user.
      */
-    suspend fun saveAuth(email: String)
+    suspend fun saveAuth(email: String, token: String)
 
     /**
      * Removes the user credentials.

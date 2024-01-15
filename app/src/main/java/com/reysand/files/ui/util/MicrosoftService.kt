@@ -33,16 +33,17 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
-private const val TAG = "OneDriveService"
+private const val TAG = "MicrosoftService"
 
 /**
  * Service class for accessing OneDrive.
  *
  * @param context The context of the app.
  */
-class OneDriveService(val context: Context) {
+class MicrosoftService(val context: Context) {
 
     var mAccount: IAccount? = null
+    var mAccessToken: String? = null
     private val scopes: List<String> = listOf("User.Read")
 
     /**
@@ -63,14 +64,15 @@ class OneDriveService(val context: Context) {
      *
      * @param callback The callback to be invoked when the sign in process finishes.
      */
-    suspend fun signIn(callback: (String?) -> Unit) {
+    suspend fun signIn(callback: (String?, String?) -> Unit) {
         val signInParameters = SignInParameters.builder()
             .withActivity(context as Activity)
             .withScopes(scopes)
             .withCallback(object : AuthenticationCallback {
                 override fun onSuccess(authenticationResult: IAuthenticationResult?) {
                     mAccount = authenticationResult?.account
-                    callback(mAccount?.username)
+                    mAccessToken = authenticationResult?.accessToken
+                    callback(mAccount?.username, mAccessToken)
                     Log.d(TAG, "signIn: Success")
                 }
 
@@ -96,8 +98,7 @@ class OneDriveService(val context: Context) {
     suspend fun isSignedIn(): Boolean = withContext(Dispatchers.IO) {
         try {
             val client = msalPublicClient.await()
-            val account = client.currentAccount
-            account.currentAccount != null
+            client.currentAccount.currentAccount != null
         } catch (e: Exception) {
             false
         }
@@ -109,6 +110,8 @@ class OneDriveService(val context: Context) {
     suspend fun signOut() = withContext(Dispatchers.IO) {
         val client = msalPublicClient.await()
         client.signOut()
+        mAccount = null
+        mAccessToken = null
         Log.d(TAG, "signOut: Success")
     }
 }

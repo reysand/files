@@ -42,7 +42,7 @@ import com.reysand.files.R
 import com.reysand.files.ui.components.PathTabs
 import com.reysand.files.ui.navigation.Destinations
 import com.reysand.files.ui.navigation.NavGraph
-import com.reysand.files.ui.util.OneDriveService
+import com.reysand.files.ui.util.MicrosoftService
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
 /**
@@ -122,7 +122,7 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                 NavGraph(
                     filesViewModel = filesViewModel,
                     navController = navController,
-                    oneDriveService = OneDriveService(context)
+                    microsoftService = MicrosoftService(context)
                 )
             }
         }

@@ -21,5 +21,6 @@ package com.reysand.files.data.model
  * @property email The email of the user.
  */
 data class AuthModel(
-    val email: String
+    val email: String,
+    val token: String
 )

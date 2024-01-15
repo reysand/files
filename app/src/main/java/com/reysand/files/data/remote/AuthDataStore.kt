@@ -41,26 +41,30 @@ class AuthDataStore(context: Context) : AuthRepository {
 
     private object PreferencesKeys {
         val EMAIL = stringPreferencesKey("email")
+        val TOKEN = stringPreferencesKey("token")
     }
 
-    override suspend fun saveAuth(email: String) {
-        val authInfo = AuthModel(email)
+    override suspend fun saveAuth(email: String, token: String) {
+        val authInfo = AuthModel(email, token)
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.EMAIL] = authInfo.email
+            preferences[PreferencesKeys.TOKEN] = authInfo.token
         }
     }
 
     override suspend fun removeAuth() {
         dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.EMAIL)
+            preferences.remove(PreferencesKeys.TOKEN)
         }
     }
 
     override fun getAuth(): Flow<AuthModel?> {
         return dataStore.data.map { preferences ->
             val email = preferences[PreferencesKeys.EMAIL] ?: ""
-            if (email.isNotEmpty()) {
-                AuthModel(email)
+            val token = preferences[PreferencesKeys.TOKEN] ?: ""
+            if (email.isNotEmpty() && token.isNotEmpty()) {
+                AuthModel(email, token)
             } else {
                 null
             }
