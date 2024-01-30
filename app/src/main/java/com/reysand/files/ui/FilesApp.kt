@@ -33,7 +33,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -42,7 +41,6 @@ import com.reysand.files.R
 import com.reysand.files.ui.components.PathTabs
 import com.reysand.files.ui.navigation.Destinations
 import com.reysand.files.ui.navigation.NavGraph
-import com.reysand.files.ui.util.MicrosoftService
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
 /**
@@ -55,8 +53,6 @@ import com.reysand.files.ui.viewmodel.FilesViewModel
 fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel.Factory)) {
     // Create a navigation controller
     val navController = rememberNavController()
-
-    val context = LocalContext.current
 
     // Get the current route from the navigation stack
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -121,8 +117,7 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                 }
                 NavGraph(
                     filesViewModel = filesViewModel,
-                    navController = navController,
-                    microsoftService = MicrosoftService(context)
+                    navController = navController
                 )
             }
         }

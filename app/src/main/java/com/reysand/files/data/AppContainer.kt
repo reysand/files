@@ -17,15 +17,14 @@ package com.reysand.files.data
 
 import android.content.Context
 import com.reysand.files.data.local.FileLocalDataSource
-import com.reysand.files.data.remote.AuthDataStore
-import com.reysand.files.data.repository.AuthRepository
 import com.reysand.files.data.repository.FileRepository
+import com.reysand.files.data.util.MicrosoftService
 
 interface AppContainer {
 
     val fileRepository: FileRepository
 
-    val authRepository: AuthRepository
+    val microsoftService: MicrosoftService
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -34,7 +33,7 @@ class DefaultAppContainer(context: Context) : AppContainer {
         FileLocalDataSource()
     }
 
-    override val authRepository: AuthRepository by lazy {
-        AuthDataStore(context)
+    override val microsoftService: MicrosoftService by lazy {
+        MicrosoftService(context)
     }
 }

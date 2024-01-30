@@ -15,7 +15,9 @@
  */
 package com.reysand.files.ui.viewmodel
 
+import android.content.Context
 import android.os.Environment
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -26,8 +28,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.reysand.files.FilesApplication
 import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
-import com.reysand.files.data.repository.AuthRepository
 import com.reysand.files.data.repository.FileRepository
+import com.reysand.files.data.util.MicrosoftService
 import com.reysand.files.ui.util.ContextWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,7 +45,7 @@ import java.io.File
 class FilesViewModel(
     private val fileRepository: FileRepository,
     private val contextWrapper: ContextWrapper,
-    private val authRepository: AuthRepository
+    private val microsoftService: MicrosoftService
 ) : ViewModel() {
 
     // MutableStateFlow holding the list of files
@@ -58,37 +60,33 @@ class FilesViewModel(
     val showPermissionDialog = mutableStateOf(!Environment.isExternalStorageManager())
 
     val oneDriveAccount = mutableStateOf<String?>(null)
-    val oneDriveToken = mutableStateOf<String?>(null)
 
     // Initialize the ViewModel by loading files from the home directory
     init {
         getFiles(homeDirectory)
 
         viewModelScope.launch {
-            authRepository.getAuth().collect {
-                oneDriveAccount.value = it?.email
-                oneDriveToken.value = it?.token
+            microsoftService.acquireTokenSilently()
+            microsoftService.usernameFlow.collect { username ->
+                oneDriveAccount.value = username
+                Log.d("FilesViewModel", "oneDriveAccount: ${oneDriveAccount.value}")
             }
         }
     }
 
     /**
-     * Set the email of the authenticated user.
+     * Toggle the Microsoft sign-in state.
      *
-     * @param email The email of the authenticated user.
+     * @param context The context of the app.
      */
-    fun setAuthInfo(email: String, token: String) {
-        viewModelScope.launch {
-            authRepository.saveAuth(email, token)
-        }
-    }
-
-    /**
-     * Remove the user credentials.
-     */
-    fun removeAuthInfo() {
-        viewModelScope.launch {
-            authRepository.removeAuth()
+    suspend fun toggleMicrosoftSignIn(context: Context) {
+        if (microsoftService.isSignedIn()) {
+            microsoftService.signOut()
+            oneDriveAccount.value = null
+        } else {
+            microsoftService.signIn(context) { account ->
+                oneDriveAccount.value = account
+            }
         }
     }
 
@@ -193,11 +191,11 @@ class FilesViewModel(
                 val application = (this[APPLICATION_KEY] as FilesApplication)
                 val fileRepository = application.container.fileRepository
                 val contextWrapper = ContextWrapper(application.applicationContext)
-                val authRepository = application.container.authRepository
+                val microsoftService = application.container.microsoftService
                 FilesViewModel(
                     fileRepository = fileRepository,
                     contextWrapper = contextWrapper,
-                    authRepository = authRepository
+                    microsoftService = microsoftService
                 )
             }
         }

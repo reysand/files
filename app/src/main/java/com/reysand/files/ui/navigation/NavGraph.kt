@@ -23,7 +23,6 @@ import androidx.navigation.compose.composable
 import com.reysand.files.ui.screens.FileListScreen
 import com.reysand.files.ui.screens.HomeScreen
 import com.reysand.files.ui.screens.SettingsScreen
-import com.reysand.files.ui.util.MicrosoftService
 import com.reysand.files.ui.viewmodel.FilesViewModel
 
 /**
@@ -31,14 +30,12 @@ import com.reysand.files.ui.viewmodel.FilesViewModel
  *
  * @param filesViewModel The [FilesViewModel] providing data for the screen.
  * @param navController NavHostController for managing navigation within the app.
- * @param microsoftService The [MicrosoftService] for accessing OneDrive.
  * @param modifier Modifier for customizing the layout.
  */
 @Composable
 fun NavGraph(
     filesViewModel: FilesViewModel,
     navController: NavHostController,
-    microsoftService: MicrosoftService,
     modifier: Modifier = Modifier
 ) {
     NavHost(navController = navController, startDestination = Destinations.HOME) {
@@ -49,7 +46,7 @@ fun NavGraph(
             FileListScreen(filesViewModel = filesViewModel)
         }
         composable(Destinations.SETTINGS) {
-            SettingsScreen(filesViewModel = filesViewModel, microsoftService = microsoftService)
+            SettingsScreen(filesViewModel = filesViewModel)
         }
     }
 }
