@@ -17,7 +17,10 @@ package com.reysand.files.data.remote
 
 import android.util.Log
 import com.reysand.files.data.model.FileModel
+import com.reysand.files.data.model.FileOperationRequest
 import com.reysand.files.data.model.OneDriveFile
+import com.reysand.files.data.model.ParentReference
+import com.reysand.files.data.model.RenameRequest
 import com.reysand.files.data.repository.OneDriveRepository
 import com.reysand.files.data.util.FileDateFormatter
 import com.reysand.files.data.util.FileSizeFormatter
@@ -69,7 +72,7 @@ class FileOneDriveDataSource(private val microsoftService: MicrosoftService) : O
 
         try {
             val response = oneDriveService.getFiles("Bearer ${microsoftService.mAccessToken}", path)
-            Log.d(TAG, "response: $response")
+            Log.d(TAG, "OneDriveService: $response")
 
             if (response.isSuccessful) {
                 for (item in response.body()?.value!!) {
@@ -84,19 +87,46 @@ class FileOneDriveDataSource(private val microsoftService: MicrosoftService) : O
     }
 
     override suspend fun moveFile(source: String, destination: String): Boolean {
-        TODO("Not yet implemented")
+        val moveRequest = FileOperationRequest(ParentReference("/drive/root:$destination"))
+        val response = oneDriveService.moveFile(
+            "Bearer ${microsoftService.mAccessToken}",
+            source,
+            moveRequest
+        )
+        Log.d(TAG, "OneDriveService: $response")
+
+        return response.isSuccessful
     }
 
     override suspend fun copyFile(source: String, destination: String): Boolean {
-        TODO("Not yet implemented")
+        val copyRequest = FileOperationRequest(ParentReference("/drive/root:$destination"))
+        val response = oneDriveService.copyFile(
+            "Bearer ${microsoftService.mAccessToken}",
+            source,
+            copyRequest
+        )
+        Log.d(TAG, "OneDriveService: $response")
+
+        return response.isSuccessful
     }
 
     override suspend fun renameFile(from: String, to: String): Boolean {
-        TODO("Not yet implemented")
+        val renameRequest = RenameRequest(to)
+        val response = oneDriveService.renameFile(
+            "Bearer ${microsoftService.mAccessToken}",
+            from,
+            renameRequest
+        )
+        Log.d(TAG, "OneDriveService: $response")
+
+        return response.isSuccessful
     }
 
     override suspend fun deleteFile(path: String): Boolean {
-        TODO("Not yet implemented")
+        val response = oneDriveService.deleteFile("Bearer ${microsoftService.mAccessToken}", path)
+        Log.d(TAG, "OneDriveService: $response")
+
+        return response.isSuccessful
     }
 
     /**

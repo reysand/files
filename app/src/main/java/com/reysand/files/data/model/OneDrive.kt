@@ -51,3 +51,21 @@ data class OneDriveFile(
 data class ParentReference(
     val path: String
 )
+
+/**
+ * Data class representing the body of a move and copy request.
+ *
+ * @property parentReference The parent reference of the file.
+ */
+data class FileOperationRequest(
+    val parentReference: ParentReference
+)
+
+/**
+ * Data class representing the body of a rename request.
+ *
+ * @property name The new name of the file.
+ */
+data class RenameRequest(
+    val name: String
+)

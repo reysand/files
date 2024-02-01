@@ -15,11 +15,17 @@
  */
 package com.reysand.files.data.util
 
+import com.reysand.files.data.model.FileOperationRequest
 import com.reysand.files.data.model.OneDrive
 import com.reysand.files.data.model.OneDriveQuota
+import com.reysand.files.data.model.RenameRequest
 import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface OneDriveService {
@@ -32,4 +38,31 @@ interface OneDriveService {
         @Header("Authorization") accessToken: String,
         @Path("path") path: String
     ): Response<OneDrive>
+
+    @PATCH("me/drive/root:/{path}")
+    suspend fun moveFile(
+        @Header("Authorization") accessToken: String,
+        @Path("path") path: String,
+        @Body moveRequest: FileOperationRequest
+    ): Response<Unit>
+
+    @POST("me/drive/root:/{path}:/copy")
+    suspend fun copyFile(
+        @Header("Authorization") accessToken: String,
+        @Path("path") path: String,
+        @Body copyRequest: FileOperationRequest
+    ): Response<Unit>
+
+    @PATCH("me/drive/root:/{path}")
+    suspend fun renameFile(
+        @Header("Authorization") accessToken: String,
+        @Path("path") path: String,
+        @Body renameRequest: RenameRequest
+    ): Response<Unit>
+
+    @DELETE("me/drive/root:/{path}")
+    suspend fun deleteFile(
+        @Header("Authorization") accessToken: String,
+        @Path("path") path: String
+    ): Response<Unit>
 }

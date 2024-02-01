@@ -178,7 +178,15 @@ class FilesViewModel(
      */
     fun moveFile(file: FileModel, destination: String) {
         viewModelScope.launch {
-            if (fileRepository.moveFile(file.path, homeDirectory.plus(destination))) {
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.moveFile(file.path, homeDirectory.plus(destination))
+                else -> oneDriveRepository.moveFile(
+                    file.path,
+                    homeDirectory.plus(destination.substringBeforeLast('/'))
+                )
+            }
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
@@ -192,7 +200,17 @@ class FilesViewModel(
      */
     fun copyFile(file: FileModel, destination: String) {
         viewModelScope.launch {
-            if (fileRepository.copyFile(file.path, homeDirectory.plus(destination))) {
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.copyFile(file.path, homeDirectory.plus(destination))
+                else -> oneDriveRepository.copyFile(
+                    file.path,
+                    homeDirectory.plus(destination.substringBeforeLast('/'))
+                )
+            }
+
+            Log.d(TAG, "copyFile: ${file.path}")
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
@@ -206,11 +224,16 @@ class FilesViewModel(
      */
     fun renameFile(file: FileModel, newName: String) {
         viewModelScope.launch {
-            if (fileRepository.renameFile(
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.renameFile(
                     file.path,
                     file.path.removeSuffix(file.name).plus(newName)
                 )
-            ) {
+
+                else -> oneDriveRepository.renameFile(file.path, newName)
+            }
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
@@ -223,7 +246,12 @@ class FilesViewModel(
      */
     fun deleteFile(path: String) {
         viewModelScope.launch {
-            if (fileRepository.deleteFile(path)) {
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.deleteFile(path)
+                else -> oneDriveRepository.deleteFile(path)
+            }
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
