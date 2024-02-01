@@ -43,12 +43,11 @@ private const val TAG = "MicrosoftService"
  *
  * @param context The context of the app.
  */
-@OptIn(DelicateCoroutinesApi::class)
 class MicrosoftService(val context: Context) {
 
     var mAccount: IAccount? = null
     var mAccessToken: String? = null
-    private val scopes: List<String> = listOf("User.Read")
+    private val scopes: List<String> = listOf("User.Read", "Files.ReadWrite.All")
 
     val usernameFlow: Flow<String?> = flow {
         emit(mAccount?.username)

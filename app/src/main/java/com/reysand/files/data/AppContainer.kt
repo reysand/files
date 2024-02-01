@@ -17,12 +17,16 @@ package com.reysand.files.data
 
 import android.content.Context
 import com.reysand.files.data.local.FileLocalDataSource
+import com.reysand.files.data.remote.FileOneDriveDataSource
 import com.reysand.files.data.repository.FileRepository
+import com.reysand.files.data.repository.OneDriveRepository
 import com.reysand.files.data.util.MicrosoftService
 
 interface AppContainer {
 
     val fileRepository: FileRepository
+
+    val oneDriveRepository: OneDriveRepository
 
     val microsoftService: MicrosoftService
 }
@@ -31,6 +35,10 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     override val fileRepository: FileRepository by lazy {
         FileLocalDataSource()
+    }
+
+    override val oneDriveRepository: OneDriveRepository by lazy {
+        FileOneDriveDataSource(microsoftService)
     }
 
     override val microsoftService: MicrosoftService by lazy {

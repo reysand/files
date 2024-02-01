@@ -109,6 +109,9 @@ dependencies {
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.context)
 
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)

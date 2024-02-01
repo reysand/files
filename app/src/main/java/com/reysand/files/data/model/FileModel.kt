@@ -15,9 +15,8 @@
  */
 package com.reysand.files.data.model
 
+import com.reysand.files.data.util.FileDateFormatter
 import com.reysand.files.data.util.FileSizeFormatter
-import java.util.Calendar
-import java.util.Locale
 
 /**
  * Data class representing a file.
@@ -43,33 +42,7 @@ data class FileModel(
         OTHER
     }
 
-    /**
-     * Gets a human-readable formatted size.
-     *
-     * @return A string representing the formatted size (e.g., "2.5 MB").
-     */
-    fun getFormattedSize(): String {
-        return FileSizeFormatter.getFormattedSize(size)
-    }
+    fun getFormattedSize(): String = FileSizeFormatter.getFormattedSize(size)
 
-    /**
-     * Gets the last modified date in a human-readable format.
-     *
-     * @return A string representing the last modified date (e.g., "Sep 12, 2023).
-     */
-    fun getLastModified(): String {
-        val current = Calendar.getInstance()
-        val date = Calendar.getInstance().apply { timeInMillis = lastModified }
-
-        val displayMonth = date.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())
-        val dayOfMonth = date.get(Calendar.DAY_OF_MONTH)
-
-        val formattedDate = buildString {
-            append("$displayMonth $dayOfMonth")
-            if (date.get(Calendar.YEAR) != current.get(Calendar.YEAR)) {
-                append(", ${date.get(Calendar.YEAR)}")
-            }
-        }
-        return formattedDate
-    }
+    fun getLastModified(): String = FileDateFormatter.getLastModified(lastModified)
 }

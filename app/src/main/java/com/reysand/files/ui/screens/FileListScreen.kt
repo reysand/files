@@ -41,7 +41,9 @@ fun FileListScreen(
     val files by filesViewModel.files.collectAsState(initial = emptyList())
 
     // Display permission alert dialog if needed
-    PermissionAlertDialog(showPermissionDialog = filesViewModel.showPermissionDialog)
+    if (filesViewModel.currentStorage.collectAsState().value == "Local") {
+        PermissionAlertDialog(showPermissionDialog = filesViewModel.showPermissionDialog)
+    }
 
     LazyColumn(modifier = modifier) {
         items(files) { file ->
