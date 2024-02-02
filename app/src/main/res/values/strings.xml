@@ -35,9 +35,12 @@
 
     <!-- Storage -->
     <string name="internal_storage">Internal Storage</string>
+    <string name="onedrive_storage">OneDrive</string>
     <string name="storage_free_space">%1$s free</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
+    <string name="settings_account_title">Accounts</string>
     <string name="settings_privacy_title">Privacy</string>
+    <string name="settings_account_sign_in">Sign in</string>
 </resources>

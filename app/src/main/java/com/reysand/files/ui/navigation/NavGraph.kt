@@ -46,7 +46,7 @@ fun NavGraph(
             FileListScreen(filesViewModel = filesViewModel)
         }
         composable(Destinations.SETTINGS) {
-            SettingsScreen()
+            SettingsScreen(filesViewModel = filesViewModel)
         }
     }
 }

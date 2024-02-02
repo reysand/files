@@ -15,7 +15,9 @@
  */
 package com.reysand.files.ui.viewmodel
 
+import android.content.Context
 import android.os.Environment
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -27,11 +29,16 @@ import com.reysand.files.FilesApplication
 import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
 import com.reysand.files.data.repository.FileRepository
+import com.reysand.files.data.repository.OneDriveRepository
+import com.reysand.files.data.util.MicrosoftService
 import com.reysand.files.ui.util.ContextWrapper
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+
+private const val TAG = "FilesViewModel"
 
 /**
  * ViewModel for managing file-related data and operations.
@@ -41,7 +48,9 @@ import java.io.File
  */
 class FilesViewModel(
     private val fileRepository: FileRepository,
-    private val contextWrapper: ContextWrapper
+    private val oneDriveRepository: OneDriveRepository,
+    private val contextWrapper: ContextWrapper,
+    private val microsoftService: MicrosoftService
 ) : ViewModel() {
 
     // MutableStateFlow holding the list of files
@@ -49,15 +58,55 @@ class FilesViewModel(
     val files = _files.asStateFlow()
 
     // Paths for the home and current directories
-    val homeDirectory = Environment.getExternalStorageDirectory().path
+    var homeDirectory = Environment.getExternalStorageDirectory().path
     val currentDirectory = mutableStateOf(homeDirectory)
+
+    // State indicating the current data source
+    private var _currentStorage = MutableStateFlow("Local")
+    val currentStorage = _currentStorage.asStateFlow()
 
     // State indicating whether to show the permission dialog
     val showPermissionDialog = mutableStateOf(!Environment.isExternalStorageManager())
 
+    val oneDriveAccount = mutableStateOf<String?>(null)
+
     // Initialize the ViewModel by loading files from the home directory
     init {
         getFiles(homeDirectory)
+
+        viewModelScope.launch {
+            microsoftService.acquireTokenSilently()
+            microsoftService.usernameFlow.collect { username ->
+                oneDriveAccount.value = username
+                Log.d("FilesViewModel", "oneDriveAccount: ${oneDriveAccount.value}")
+            }
+        }
+    }
+
+    fun setCurrentStorage(storage: String) {
+        _currentStorage.value = storage
+        when (storage) {
+            "Local" -> homeDirectory = Environment.getExternalStorageDirectory().path
+            "OneDrive" -> homeDirectory = "/"
+        }
+        currentDirectory.value = homeDirectory
+        getFiles(homeDirectory)
+    }
+
+    /**
+     * Toggle the Microsoft sign-in state.
+     *
+     * @param context The context of the app.
+     */
+    suspend fun toggleMicrosoftSignIn(context: Context) {
+        if (microsoftService.isSignedIn()) {
+            microsoftService.signOut()
+            oneDriveAccount.value = null
+        } else {
+            microsoftService.signIn(context) { account ->
+                oneDriveAccount.value = account
+            }
+        }
     }
 
     /**
@@ -67,7 +116,10 @@ class FilesViewModel(
      */
     fun getFiles(path: String) {
         viewModelScope.launch {
-            _files.value = fileRepository.getFiles(path)
+            when (currentStorage.value) {
+                "Local" -> _files.value = fileRepository.getFiles(path)
+                "OneDrive" -> _files.value = oneDriveRepository.getFiles(path)
+            }
             currentDirectory.value = path
         }
     }
@@ -76,7 +128,16 @@ class FilesViewModel(
      * Navigate up to the parent directory,
      */
     fun navigateUp() {
-        val parentDirectory = File(currentDirectory.value).parent
+        val parentDirectory = when (currentStorage.value) {
+            "Local" -> File(currentDirectory.value).parent
+            "OneDrive" -> if (!currentDirectory.value.contains('/')) {
+                "/"
+            } else {
+                currentDirectory.value.substringBeforeLast('/')
+            }
+
+            else -> null
+        }
 
         if (currentDirectory.value != homeDirectory && parentDirectory != null) {
             getFiles(parentDirectory)
@@ -96,6 +157,20 @@ class FilesViewModel(
     }
 
     /**
+     * Gets the free space of the OneDrive storage.
+     *
+     * @return A string representing the free space of the OneDrive storage.
+     */
+    suspend fun getOneDriveStorageFreeSpace(): String {
+        return viewModelScope.async {
+            contextWrapper.getContext().getString(
+                R.string.storage_free_space,
+                oneDriveRepository.getStorageFreeSpace()
+            )
+        }.await()
+    }
+
+    /**
      * Move a file from one path to another.
      *
      * @param file The file to move.
@@ -103,7 +178,15 @@ class FilesViewModel(
      */
     fun moveFile(file: FileModel, destination: String) {
         viewModelScope.launch {
-            if (fileRepository.moveFile(file.path, homeDirectory.plus(destination))) {
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.moveFile(file.path, homeDirectory.plus(destination))
+                else -> oneDriveRepository.moveFile(
+                    file.path,
+                    homeDirectory.plus(destination.substringBeforeLast('/'))
+                )
+            }
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
@@ -117,7 +200,17 @@ class FilesViewModel(
      */
     fun copyFile(file: FileModel, destination: String) {
         viewModelScope.launch {
-            if (fileRepository.copyFile(file.path, homeDirectory.plus(destination))) {
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.copyFile(file.path, homeDirectory.plus(destination))
+                else -> oneDriveRepository.copyFile(
+                    file.path,
+                    homeDirectory.plus(destination.substringBeforeLast('/'))
+                )
+            }
+
+            Log.d(TAG, "copyFile: ${file.path}")
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
@@ -131,11 +224,16 @@ class FilesViewModel(
      */
     fun renameFile(file: FileModel, newName: String) {
         viewModelScope.launch {
-            if (fileRepository.renameFile(
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.renameFile(
                     file.path,
                     file.path.removeSuffix(file.name).plus(newName)
                 )
-            ) {
+
+                else -> oneDriveRepository.renameFile(file.path, newName)
+            }
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
@@ -148,7 +246,12 @@ class FilesViewModel(
      */
     fun deleteFile(path: String) {
         viewModelScope.launch {
-            if (fileRepository.deleteFile(path)) {
+            val result = when (currentStorage.value) {
+                "Local" -> fileRepository.deleteFile(path)
+                else -> oneDriveRepository.deleteFile(path)
+            }
+
+            if (result) {
                 getFiles(currentDirectory.value)
             }
         }
@@ -160,8 +263,15 @@ class FilesViewModel(
             initializer {
                 val application = (this[APPLICATION_KEY] as FilesApplication)
                 val fileRepository = application.container.fileRepository
+                val oneDriveRepository = application.container.oneDriveRepository
                 val contextWrapper = ContextWrapper(application.applicationContext)
-                FilesViewModel(fileRepository = fileRepository, contextWrapper = contextWrapper)
+                val microsoftService = application.container.microsoftService
+                FilesViewModel(
+                    fileRepository = fileRepository,
+                    oneDriveRepository = oneDriveRepository,
+                    contextWrapper = contextWrapper,
+                    microsoftService = microsoftService
+                )
             }
         }
     }

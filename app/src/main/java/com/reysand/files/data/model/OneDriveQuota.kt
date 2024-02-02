@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Andrey Slyusar
+ * Copyright 2024 Andrey Slyusar
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.reysand.files
+package com.reysand.files.data.model
 
-import android.app.Application
-import com.reysand.files.data.AppContainer
-import com.reysand.files.data.DefaultAppContainer
+/**
+ * Data class representing the quota of a OneDrive account.
+ *
+ * @property quota The quota of the OneDrive account.
+ */
+data class OneDriveQuota(
+    val quota: Quota
+)
 
-class FilesApplication : Application() {
-
-    lateinit var container: AppContainer
-
-    override fun onCreate() {
-        super.onCreate()
-        container = DefaultAppContainer(this)
-    }
-}
+/**
+ * Data class representing the quota details.
+ *
+ * @property remaining The remaining quota in bytes.
+ */
+data class Quota(
+    val remaining: Long
+)

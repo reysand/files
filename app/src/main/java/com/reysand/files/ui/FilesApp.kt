@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -58,9 +59,15 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val currentStorage = filesViewModel.currentStorage.collectAsState()
+    val storageTitle = when (currentStorage.value) {
+        "Local" -> R.string.internal_storage
+        else -> R.string.onedrive_storage
+    }
+
     // Determine the title for the top app bar based on the current route
     val topBarTitle = when (currentRoute) {
-        Destinations.FILE_LIST -> R.string.internal_storage
+        Destinations.FILE_LIST -> storageTitle
         Destinations.SETTINGS -> R.string.settings_title
         else -> R.string.app_name
     }
@@ -68,22 +75,21 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = {
-                Text(
-                    text = stringResource(id = topBarTitle)
-                )
+                Text(text = stringResource(id = topBarTitle))
             },
             navigationIcon = {
                 if (currentRoute != Destinations.HOME) {
                     IconButton(onClick = {
                         if (filesViewModel.currentDirectory.value != filesViewModel.homeDirectory &&
-                            currentRoute == Destinations.FILE_LIST) {
+                            currentRoute == Destinations.FILE_LIST
+                        ) {
                             filesViewModel.navigateUp()
                         } else {
                             navController.popBackStack()
                         }
                     }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack, contentDescription = null
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null
                         )
                     }
                 }
@@ -99,13 +105,13 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
             },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5F)
-            ),
+            )
         )
-    }) {
+    }) { innerPadding ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it),
+                .padding(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
             Column {
@@ -113,11 +119,18 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                     PathTabs(
                         filesViewModel.homeDirectory, filesViewModel.currentDirectory.value
                     ) { newPath ->
-                        filesViewModel.getFiles(newPath)
+                        val oneDrivePath =
+                            if (newPath != "/") newPath.dropWhile { it == '/' } else newPath
+
+                        when (currentStorage.value) {
+                            "Local" -> filesViewModel.getFiles(newPath)
+                            "OneDrive" -> filesViewModel.getFiles(oneDrivePath)
+                        }
                     }
                 }
                 NavGraph(
-                    filesViewModel = filesViewModel, navController = navController
+                    filesViewModel = filesViewModel,
+                    navController = navController
                 )
             }
         }
