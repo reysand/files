@@ -23,11 +23,11 @@ jobs:
       - name: Generate auth_config_single_account.json
         run: |
           mkdir ./app/src/main/res/raw
-          echo "${{ secrets.AUTH_CONFIG_SINGLE_ACCOUNT }} > ./app/src/main/res/raw/auth_config_single_account.json
+          echo "${{ secrets.AUTH_CONFIG_SINGLE_ACCOUNT }}" > ./app/src/main/res/raw/auth_config_single_account.json
 
       - name: Generate secrets.properties
         run: |
-          echo "${{ secrets.SECRETS_PROPERTIES }} > ./secrets.properties
+          echo "${{ secrets.SECRETS_PROPERTIES }}" > ./secrets.properties
 
       - name: Generate keystore.properties
         run: |
