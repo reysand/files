@@ -62,7 +62,8 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
     val currentStorage = filesViewModel.currentStorage.collectAsState()
     val storageTitle = when (currentStorage.value) {
         "Local" -> R.string.internal_storage
-        else -> R.string.onedrive_storage
+        "OneDrive" -> R.string.onedrive_storage
+        else -> R.string.yandex_disk_storage
     }
 
     // Determine the title for the top app bar based on the current route
@@ -89,7 +90,8 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                         }
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
                         )
                     }
                 }
@@ -119,12 +121,13 @@ fun FilesApp(filesViewModel: FilesViewModel = viewModel(factory = FilesViewModel
                     PathTabs(
                         filesViewModel.homeDirectory, filesViewModel.currentDirectory.value
                     ) { newPath ->
-                        val oneDrivePath =
+                        val fixedPath =
                             if (newPath != "/") newPath.dropWhile { it == '/' } else newPath
 
                         when (currentStorage.value) {
                             "Local" -> filesViewModel.getFiles(newPath)
-                            "OneDrive" -> filesViewModel.getFiles(oneDrivePath)
+                            "OneDrive" -> filesViewModel.getFiles(fixedPath)
+                            "YandexDisk" -> filesViewModel.getFiles(fixedPath)
                         }
                     }
                 }

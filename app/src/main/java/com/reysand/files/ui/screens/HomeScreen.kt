@@ -49,6 +49,9 @@ fun HomeScreen(
     val oneDriveAccount by remember { filesViewModel.oneDriveAccount }
     val oneDriveStorageFreeSpace = remember { mutableStateOf("Not signed in") }
 
+    val yandexDiskAccount by remember { filesViewModel.yandexDiskAccount }
+    val yandexDiskStorageFreeSpace = remember { mutableStateOf("Not signed in") }
+
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(
@@ -78,6 +81,22 @@ fun HomeScreen(
             info = oneDriveStorageFreeSpace.value
         ) {
             filesViewModel.setCurrentStorage("OneDrive")
+            navController.navigate(Destinations.FILE_LIST)
+        }
+
+        LaunchedEffect(yandexDiskAccount) {
+            yandexDiskAccount?.let {
+                yandexDiskStorageFreeSpace.value = filesViewModel.getYandexDiskStorageFreeSpace()
+            }
+        }
+
+        StorageCard(
+            title = stringResource(id = R.string.yandex_disk_storage),
+            enabled = yandexDiskAccount != null,
+            leadingIcon = R.drawable.ic_cloud_storage,
+            info = yandexDiskStorageFreeSpace.value
+        ) {
+            filesViewModel.setCurrentStorage("YandexDisk")
             navController.navigate(Destinations.FILE_LIST)
         }
     }

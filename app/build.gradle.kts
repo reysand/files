@@ -38,7 +38,7 @@ android {
         minSdk = 33
         targetSdk = 34
         versionCode = 3
-        versionName = "0.1.2"
+        versionName = "0.1.3"
 
         manifestPlaceholders["YANDEX_CLIENT_ID"] = secretsProperties["YANDEX_CLIENT_ID"] as String
 
