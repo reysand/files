@@ -40,6 +40,8 @@ android {
         versionCode = 3
         versionName = "0.1.2"
 
+        manifestPlaceholders["YANDEX_CLIENT_ID"] = secretsProperties["YANDEX_CLIENT_ID"] as String
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -108,6 +110,8 @@ dependencies {
     }
     implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.context)
+
+    implementation(libs.authsdk)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)

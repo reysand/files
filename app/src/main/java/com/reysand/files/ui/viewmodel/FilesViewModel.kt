@@ -30,8 +30,11 @@ import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
 import com.reysand.files.data.repository.FileRepository
 import com.reysand.files.data.repository.OneDriveRepository
+import com.reysand.files.data.repository.YandexUserRepository
 import com.reysand.files.data.util.MicrosoftService
+import com.reysand.files.data.util.YandexService
 import com.reysand.files.ui.util.ContextWrapper
+import com.yandex.authsdk.YandexAuthResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,8 +52,10 @@ private const val TAG = "FilesViewModel"
 class FilesViewModel(
     private val fileRepository: FileRepository,
     private val oneDriveRepository: OneDriveRepository,
+    private val yandexUserRepository: YandexUserRepository,
     private val contextWrapper: ContextWrapper,
-    private val microsoftService: MicrosoftService
+    private val microsoftService: MicrosoftService,
+    private val yandexService: YandexService
 ) : ViewModel() {
 
     // MutableStateFlow holding the list of files
@@ -69,6 +74,7 @@ class FilesViewModel(
     val showPermissionDialog = mutableStateOf(!Environment.isExternalStorageManager())
 
     val oneDriveAccount = mutableStateOf<String?>(null)
+    val yandexDiskAccount = mutableStateOf<String?>(null)
 
     // Initialize the ViewModel by loading files from the home directory
     init {
@@ -80,6 +86,7 @@ class FilesViewModel(
                 oneDriveAccount.value = username
                 Log.d("FilesViewModel", "oneDriveAccount: ${oneDriveAccount.value}")
             }
+//            yandexDiskAccount.value = yandexUserRepository.getInfo(yandexService.token?.value)
         }
     }
 
@@ -107,6 +114,20 @@ class FilesViewModel(
                 oneDriveAccount.value = account
             }
         }
+    }
+
+    fun handleResult(result: YandexAuthResult) {
+        yandexService.handleResult(result)
+    }
+
+    suspend fun getInfo() {
+        if (yandexService.token != null) {
+            Log.d(TAG, "token: ${yandexService.token!!.value}")
+            Log.d(TAG, "getInfo: ${yandexUserRepository.getInfo(yandexService.token!!.value)}")
+            yandexDiskAccount.value = yandexUserRepository.getInfo(yandexService.token!!.value)
+        }
+
+//        Log.d(TAG, "getInfo: ${yandexUserRepository.getInfo(yandexService.token!!)}")
     }
 
     /**
@@ -264,13 +285,17 @@ class FilesViewModel(
                 val application = (this[APPLICATION_KEY] as FilesApplication)
                 val fileRepository = application.container.fileRepository
                 val oneDriveRepository = application.container.oneDriveRepository
+                val yandexUserRepository = application.container.yandexUserRepository
                 val contextWrapper = ContextWrapper(application.applicationContext)
                 val microsoftService = application.container.microsoftService
+                val yandexService = application.container.yandexService
                 FilesViewModel(
                     fileRepository = fileRepository,
                     oneDriveRepository = oneDriveRepository,
+                    yandexUserRepository = yandexUserRepository,
                     contextWrapper = contextWrapper,
-                    microsoftService = microsoftService
+                    microsoftService = microsoftService,
+                    yandexService = yandexService
                 )
             }
         }
