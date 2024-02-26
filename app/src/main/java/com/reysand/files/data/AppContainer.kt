@@ -18,9 +18,14 @@ package com.reysand.files.data
 import android.content.Context
 import com.reysand.files.data.local.FileLocalDataSource
 import com.reysand.files.data.remote.FileOneDriveDataSource
+import com.reysand.files.data.remote.FileYandexDiskDataSource
+import com.reysand.files.data.remote.YandexUserDataSource
 import com.reysand.files.data.repository.FileRepository
 import com.reysand.files.data.repository.OneDriveRepository
+import com.reysand.files.data.repository.YandexDiskRepository
+import com.reysand.files.data.repository.YandexUserRepository
 import com.reysand.files.data.util.MicrosoftService
+import com.reysand.files.data.util.YandexService
 
 interface AppContainer {
 
@@ -28,7 +33,13 @@ interface AppContainer {
 
     val oneDriveRepository: OneDriveRepository
 
+    val yandexDiskRepository: YandexDiskRepository
+
+    val yandexUserRepository: YandexUserRepository
+
     val microsoftService: MicrosoftService
+
+    val yandexService: YandexService
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
@@ -41,7 +52,19 @@ class DefaultAppContainer(context: Context) : AppContainer {
         FileOneDriveDataSource(microsoftService)
     }
 
+    override val yandexDiskRepository: YandexDiskRepository by lazy {
+        FileYandexDiskDataSource(yandexService)
+    }
+
+    override val yandexUserRepository: YandexUserRepository by lazy {
+        YandexUserDataSource()
+    }
+
     override val microsoftService: MicrosoftService by lazy {
         MicrosoftService(context)
+    }
+
+    override val yandexService: YandexService by lazy {
+        YandexService()
     }
 }

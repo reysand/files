@@ -16,12 +16,14 @@
 package com.reysand.files.ui.screens
 
 import android.content.res.Configuration
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -37,11 +39,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.reysand.files.R
 import com.reysand.files.ui.components.allowPermission
 import com.reysand.files.ui.theme.FilesTheme
 import com.reysand.files.ui.viewmodel.FilesViewModel
+import com.yandex.authsdk.YandexAuthLoginOptions
+import com.yandex.authsdk.YandexAuthOptions
+import com.yandex.authsdk.YandexAuthSdk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -54,6 +61,13 @@ fun SettingsScreen(filesViewModel: FilesViewModel) {
 
     val context = LocalContext.current
     val oneDriveAccount by remember { filesViewModel.oneDriveAccount }
+    val yandexDiskAccount by remember { filesViewModel.yandexDiskAccount }
+
+    val sdk = YandexAuthSdk.create(YandexAuthOptions(context))
+    val launcher = rememberLauncherForActivityResult(sdk.contract) { result ->
+        filesViewModel.handleResult(result)
+    }
+    val loginOptions = YandexAuthLoginOptions()
 
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -73,6 +87,31 @@ fun SettingsScreen(filesViewModel: FilesViewModel) {
                 trailingContent = {
                     Text(
                         text = oneDriveAccount
+                            ?: stringResource(id = R.string.settings_account_sign_in),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            )
+
+            Divider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = Dp.Hairline
+            )
+
+            ListItem(
+                headlineContent = {
+                    Text(text = stringResource(id = R.string.yandex_disk_storage))
+                },
+                modifier = Modifier.clickable(onClick = {
+                    scope.launch {
+                        launcher.launch(loginOptions)
+                        delay(2000)
+                        filesViewModel.getInfo()
+                    }
+                }),
+                trailingContent = {
+                    Text(
+                        text = yandexDiskAccount
                             ?: stringResource(id = R.string.settings_account_sign_in),
                         style = MaterialTheme.typography.bodyMedium
                     )

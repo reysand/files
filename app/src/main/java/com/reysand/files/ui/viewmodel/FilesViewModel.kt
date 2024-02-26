@@ -30,8 +30,12 @@ import com.reysand.files.R
 import com.reysand.files.data.model.FileModel
 import com.reysand.files.data.repository.FileRepository
 import com.reysand.files.data.repository.OneDriveRepository
+import com.reysand.files.data.repository.YandexDiskRepository
+import com.reysand.files.data.repository.YandexUserRepository
 import com.reysand.files.data.util.MicrosoftService
+import com.reysand.files.data.util.YandexService
 import com.reysand.files.ui.util.ContextWrapper
+import com.yandex.authsdk.YandexAuthResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,8 +53,11 @@ private const val TAG = "FilesViewModel"
 class FilesViewModel(
     private val fileRepository: FileRepository,
     private val oneDriveRepository: OneDriveRepository,
+    private val yandexDiskRepository: YandexDiskRepository,
+    private val yandexUserRepository: YandexUserRepository,
     private val contextWrapper: ContextWrapper,
-    private val microsoftService: MicrosoftService
+    private val microsoftService: MicrosoftService,
+    private val yandexService: YandexService
 ) : ViewModel() {
 
     // MutableStateFlow holding the list of files
@@ -69,6 +76,7 @@ class FilesViewModel(
     val showPermissionDialog = mutableStateOf(!Environment.isExternalStorageManager())
 
     val oneDriveAccount = mutableStateOf<String?>(null)
+    val yandexDiskAccount = mutableStateOf<String?>(null)
 
     // Initialize the ViewModel by loading files from the home directory
     init {
@@ -88,6 +96,7 @@ class FilesViewModel(
         when (storage) {
             "Local" -> homeDirectory = Environment.getExternalStorageDirectory().path
             "OneDrive" -> homeDirectory = "/"
+            "YandexDisk" -> homeDirectory = "/"
         }
         currentDirectory.value = homeDirectory
         getFiles(homeDirectory)
@@ -109,6 +118,16 @@ class FilesViewModel(
         }
     }
 
+    fun handleResult(result: YandexAuthResult) {
+        yandexService.handleResult(result)
+    }
+
+    suspend fun getInfo() {
+        if (yandexService.token != null) {
+            yandexDiskAccount.value = yandexUserRepository.getInfo(yandexService.token!!.value)
+        }
+    }
+
     /**
      * Get a list of files from the specified path.
      *
@@ -119,6 +138,7 @@ class FilesViewModel(
             when (currentStorage.value) {
                 "Local" -> _files.value = fileRepository.getFiles(path)
                 "OneDrive" -> _files.value = oneDriveRepository.getFiles(path)
+                "YandexDisk" -> _files.value = yandexDiskRepository.getFiles(path)
             }
             currentDirectory.value = path
         }
@@ -131,6 +151,11 @@ class FilesViewModel(
         val parentDirectory = when (currentStorage.value) {
             "Local" -> File(currentDirectory.value).parent
             "OneDrive" -> if (!currentDirectory.value.contains('/')) {
+                "/"
+            } else {
+                currentDirectory.value.substringBeforeLast('/')
+            }
+            "YandexDisk" -> if (!currentDirectory.value.contains('/')) {
                 "/"
             } else {
                 currentDirectory.value.substringBeforeLast('/')
@@ -171,6 +196,20 @@ class FilesViewModel(
     }
 
     /**
+     * Gets the free space of the OneDrive storage.
+     *
+     * @return A string representing the free space of the OneDrive storage.
+     */
+    suspend fun getYandexDiskStorageFreeSpace(): String {
+        return viewModelScope.async {
+            contextWrapper.getContext().getString(
+                R.string.storage_free_space,
+                yandexDiskRepository.getStorageFreeSpace()
+            )
+        }.await()
+    }
+
+    /**
      * Move a file from one path to another.
      *
      * @param file The file to move.
@@ -180,9 +219,13 @@ class FilesViewModel(
         viewModelScope.launch {
             val result = when (currentStorage.value) {
                 "Local" -> fileRepository.moveFile(file.path, homeDirectory.plus(destination))
-                else -> oneDriveRepository.moveFile(
+                "OneDrive" -> oneDriveRepository.moveFile(
                     file.path,
                     homeDirectory.plus(destination.substringBeforeLast('/'))
+                )
+                else -> yandexDiskRepository.moveFile(
+                    file.path,
+                    homeDirectory.plus(destination)
                 )
             }
 
@@ -202,9 +245,13 @@ class FilesViewModel(
         viewModelScope.launch {
             val result = when (currentStorage.value) {
                 "Local" -> fileRepository.copyFile(file.path, homeDirectory.plus(destination))
-                else -> oneDriveRepository.copyFile(
+                "OneDrive" -> oneDriveRepository.copyFile(
                     file.path,
                     homeDirectory.plus(destination.substringBeforeLast('/'))
+                )
+                else -> yandexDiskRepository.copyFile(
+                    file.path,
+                    homeDirectory.plus(destination)
                 )
             }
 
@@ -229,8 +276,8 @@ class FilesViewModel(
                     file.path,
                     file.path.removeSuffix(file.name).plus(newName)
                 )
-
-                else -> oneDriveRepository.renameFile(file.path, newName)
+                "OneDrive" -> oneDriveRepository.renameFile(file.path, newName)
+                else -> yandexDiskRepository.renameFile(file.path, newName)
             }
 
             if (result) {
@@ -248,7 +295,8 @@ class FilesViewModel(
         viewModelScope.launch {
             val result = when (currentStorage.value) {
                 "Local" -> fileRepository.deleteFile(path)
-                else -> oneDriveRepository.deleteFile(path)
+                "OneDrive" -> oneDriveRepository.deleteFile(path)
+                else -> yandexDiskRepository.deleteFile(path)
             }
 
             if (result) {
@@ -264,13 +312,19 @@ class FilesViewModel(
                 val application = (this[APPLICATION_KEY] as FilesApplication)
                 val fileRepository = application.container.fileRepository
                 val oneDriveRepository = application.container.oneDriveRepository
+                val yandexDiskRepository = application.container.yandexDiskRepository
+                val yandexUserRepository = application.container.yandexUserRepository
                 val contextWrapper = ContextWrapper(application.applicationContext)
                 val microsoftService = application.container.microsoftService
+                val yandexService = application.container.yandexService
                 FilesViewModel(
                     fileRepository = fileRepository,
                     oneDriveRepository = oneDriveRepository,
+                    yandexDiskRepository = yandexDiskRepository,
+                    yandexUserRepository = yandexUserRepository,
                     contextWrapper = contextWrapper,
-                    microsoftService = microsoftService
+                    microsoftService = microsoftService,
+                    yandexService = yandexService
                 )
             }
         }

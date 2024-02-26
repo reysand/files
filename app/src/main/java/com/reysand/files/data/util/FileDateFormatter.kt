@@ -39,6 +39,8 @@ object FileDateFormatter {
                 formattedDate = date.replace(".$fractionalSeconds", ".$fractionalSeconds"
                         .padEnd(4, '0'))
             }
+        } else if (date.contains("+")) {
+            formattedDate = date.replace("+00:00", ".000Z")
         } else {
             formattedDate = date.replace("Z", ".000Z")
         }

@@ -36,6 +36,7 @@
     <!-- Storage -->
     <string name="internal_storage">Internal Storage</string>
     <string name="onedrive_storage">OneDrive</string>
+    <string name="yandex_disk_storage">Yandex.Disk</string>
     <string name="storage_free_space">%1$s free</string>
 
     <!-- Settings -->
